@@ -76,6 +76,11 @@ $(function () {
         url = 'https://www.google.com/maps?ll=' + msg + '&q=' + msg + '&hl=en&t=m&z=15'
         return url
     }
+    function getReverseMapUrl(lat, lon) {
+        url = 'https://nominatim.openstreetmap.org/ui/reverse.html?lat=' + lat + '&lon=' + lon +  '&zoom=18'
+        return url
+    }
+    
     function showPosition(position) {
         lat = position.coords.latitude
         lon = position.coords.longitude
@@ -172,7 +177,9 @@ $(function () {
                     if (doc.location.search(',') != -1) {
                         loc = doc.location.split(',')
                         url = getGoogleMapsUrl(loc[0], loc[1])
+                        reverseUrl = getReverseMapUrl(loc[0], loc[1])
                         locationHtml = '<a href="' + url + '"  target="_blank")">🌎</a>'
+                        locationHtml += '<a href="' + reverseUrl + '"  target="_blank")">📍</a>'
                     }
                     noteHtml = '<button ' + 
                     'type="button" ' + 
