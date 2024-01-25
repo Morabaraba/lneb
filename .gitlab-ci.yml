@@ -1,2 +1,7 @@
 # The Docker image that will be used to build your app
 image: scratch
+stages:
+  - deployed
+deployed:
+  stage: deployed
+  script: echo "Deployed"
