@@ -1,18 +1,22 @@
 $(function () {
     window.app = app = {}
     // local vars
-    inputs = ['category', 'date', 'time', 'location']
+    inputs = ['date', 'time', 'location']
     app.inputs = inputs
     $inputs = {}
     inputs.forEach(function (input) {
         $inputs[input] = $('input[name=' + input + ']')
     })
+    $inputs['category'] = $('select[name=category]')
     $inputs['notes'] = $('textarea[name=notes]')
     $inputs['gmaps'] = $('#google-maps')
     app.$inputs = $inputs
     app.$activityForm = $('.js-activity-form')
     app.$activityList = $('.js-activity-list')
     app.$activityTable = $('.js-activity-tbody')
+    app.$categoriesEdit = $('.js-categories-edit')
+    app.$categoriesTextArea = $('.js-categories-textarea')
+
     db = new PouchDB('lenb')
     app.db = db
     app.categories = ['-']
@@ -25,14 +29,20 @@ $(function () {
                     _id: 'lenb-categories',
                     categories: app.categories
                 }, function (err, response) {
-                    if (err) { return console.log(err); }
+                    if (err) {
+                        console.log(err);
+                        alert('Error:' + err)
+                        return
+                    }
+                    app.categories_rev = response._rev
                     // handle response
-                    cb()
+                    cb(response)
                 });
                 return
             }
             // handle doc
             app.categories = doc.categories
+            app.categories_rev = doc._rev
             cb()
         });
     }
@@ -78,6 +88,8 @@ $(function () {
     function addActivity() {
         app.$activityForm.show()
         app.$activityList.hide()
+        app.$categoriesEdit.hide()
+
         var date = new Date();
         var currentDate = date.toISOString().substring(0, 10)
         var currentTime = date.toISOString().substring(11, 16)
@@ -89,7 +101,6 @@ $(function () {
             app.categories.forEach(function (cat) {
                 $inputs['category'].append($('<option>' + cat + '</option>'))
             })
-            $inputs['category'].val('-')
         });
 
         setLocation();
@@ -138,12 +149,17 @@ $(function () {
     function showList() {
         app.$activityForm.hide()
         app.$activityList.show()
+        app.$categoriesEdit.hide()
 
         db.allDocs({
             include_docs: true,
             attachments: false,
         }, function (err, response) {
-            if (err) { return console.log(err); }
+            if (err) {
+                console.log(err);
+                alert('Error:' + err)
+                return
+            }
             console.log(response)
             html = '<span>No Entries</span>'
             app.$activityTable.html(html)
@@ -158,17 +174,40 @@ $(function () {
                         url = getGoogleMapsUrl(loc[0], loc[1])
                         locationHtml = '<span onclick="javasscript:window.open(\'' + url + '\', "_blank")">🌎</span>'
                     }
-
+                    noteHtml = '<button ' + 
+                    'type="button" ' + 
+                    'class="btn btn-light" ' + 
+                    'data-bs-toggle="popover" ' + 
+                    'data-bs-placement="left" ' + 
+                    'data-bs-title="Note" ' + 
+                    'data-bs-content="'+ quoteattr(doc.notes) + '"  ' + 
+                    '> ' + 
+                    ' 📄 ' + 
+                    '</button>'
                     html += '<tr>' +
                         '<th scope="row">' + i + '</th>' +
+                        '<td>' + doc.category + '</td>' +
                         '<td>' + doc.date + '</td>' +
                         '<td>' + doc.time + '</td>' +
                         '<td>' + locationHtml + '</td>' +
-                        '<td class="text-end"><span title="' + quoteattr(doc.notes) + '">📝</span></td>' +
+                        '<td class="text-end">' +  noteHtml +'</td>' +
                         '</tr>'
                 }
             })
             app.$activityTable.html(html)
+            setupPopover()
+        });
+    }
+    function copyCategories(cb) {
+        db = new PouchDB('lenb')
+        db.put({
+            _id: 'lenb-categories',
+            categories: app.categories
+        }, function (err, response) {
+            if (err) {
+                console.log(err);
+            }
+            cb(response)
         });
     }
     function deleteDatabase() {
@@ -181,8 +220,10 @@ $(function () {
                     return
                 } else {
                     // success
-                    alert('Success, reloading app.')
-                    location.reload();
+                    copyCategories(function() {
+                        alert('Deleted Database')
+                        location.reload();
+                    })
                 }
             });
 
@@ -202,7 +243,6 @@ $(function () {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     }
-
     function saveToSheet() {
         data = []
         i = 0
@@ -210,7 +250,11 @@ $(function () {
             include_docs: true,
             attachments: false,
         }, function (err, response) {
-            if (err) { return console.log(err); }
+            if (err) {
+                console.log(err);
+                alert('Error:' + err)
+                return
+            }
             response.rows.forEach(function (row) {
                 if (row.id.search('activity-') != -1) {
                     i += 1
@@ -220,7 +264,6 @@ $(function () {
                     data.push(row.doc)
                 }
             })
-            //debugger
             csv = Papa.unparse(data);
             var date = new Date();
             var currentDate = date.toISOString().substring(0, 10)
@@ -230,11 +273,44 @@ $(function () {
         })
 
     }
+    function categoriesEdit() {
+        app.$activityForm.hide()
+        app.$activityList.hide()
+        app.$categoriesEdit.show()
+        app.$categoriesTextArea.val(app.categories.join('\n'))
+    }
+    function categoriesSave() {
+        app.categories = app.$categoriesTextArea.val().split('\n')
+        db.put({
+            _id: 'lenb-categories',
+            _rev: app.categories_rev,
+            categories: app.categories
+        }, function (err, response) {
+            if (err) {
+                console.log(err);
+                alert('Error:' + err) 
+                return
+            }
+            // handle response
+            alert('Categories Saved')
+            addActivity();
+        });
+    }
+    function setupPopover() {
+        const popoverTriggerList = document.querySelectorAll(
+            "[data-bs-toggle='popover']"
+          );
+          const popoverList = [...popoverTriggerList].map(
+            popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl)
+          );
+    }
     $('.js-add').click(addActivity)
     $('.js-save').click(saveActivity)
     $('.js-list').click(showList)
     $('.js-delete-db').click(deleteDatabase)
     $('.js-export').click(saveToSheet)
-
+    $('.js-categories').click(categoriesEdit)
+    $('.js-categories-save').click(categoriesSave)
+    app.addActivity = addActivity
     addActivity(); // init
 })
