@@ -172,7 +172,7 @@ $(function () {
                     if (doc.location.search(',') != -1) {
                         loc = doc.location.split(',')
                         url = getGoogleMapsUrl(loc[0], loc[1])
-                        locationHtml = '<span onclick="javasscript:window.open(\'' + url + '\', "_blank")">🌎</span>'
+                        locationHtml = '<a href="' + url + '"  target="_blank")">🌎</a>'
                     }
                     noteHtml = '<button ' + 
                     'type="button" ' + 
