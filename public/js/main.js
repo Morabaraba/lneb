@@ -11,7 +11,8 @@ $(function () {
     $inputs['gmaps'] = $('#google-maps')
     app.$inputs = $inputs
     app.$activityForm = $('.js-activity-form')
-    app.$activityList = $('.js-activity-tbody')
+    app.$activityList = $('.js-activity-list')
+    app.$activityTable = $('.js-activity-tbody')
     db = new PouchDB('lenb')
     app.db = db
     app.categories = ['-']
@@ -26,7 +27,7 @@ $(function () {
                 }, function (err, response) {
                     if (err) { return console.log(err); }
                     // handle response
-                   cb()
+                    cb()
                 });
                 return
             }
@@ -60,11 +61,15 @@ $(function () {
             $inputs['location'].val(msg);
         }
     }
+    function getGoogleMapsUrl(lat, lon) {
+        msg = lat + ',' + lon
+        url = 'https://www.google.com/maps?ll=' + msg + '&q=' + msg + '&hl=en&t=m&z=15'
+        return url
+    }
     function showPosition(position) {
         lat = position.coords.latitude
         lon = position.coords.longitude
-        msg = lat + ',' + lon
-        url = 'https://www.google.com/maps?ll=' + msg + '&q=' + msg + '&hl=en&t=m&z=15'
+        url = getGoogleMapsUrl(lat, lon)
         $inputs['location'].val(msg);
         $inputs['gmaps'].click(function () {
             window.open(url, "_blank");
@@ -79,39 +84,39 @@ $(function () {
         $inputs['time'].val(currentTime)
         $inputs['date'].val(currentDate)
         $inputs['notes'].val('')
-        setCategories(function() {
+        setCategories(function () {
             $inputs['category'].html('')
             app.categories.forEach(function (cat) {
-                $inputs['category'].append( $('<option>' + cat + '</option>') )
+                $inputs['category'].append($('<option>' + cat + '</option>'))
             })
             $inputs['category'].val('-')
         });
-        
+
         setLocation();
     }
     function uuidv4() {
         return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
         );
-      }
+    }
     function saveActivity() {
         formData = new FormData(app.$activityForm[0]);
         entries = Object.fromEntries(formData.entries());
-        
+
         entries._id = 'activity-' + entries.date + '-' + entries.time + '-' + uuidv4()
         db.post(entries, function (err, response) {
-            if (err) { 
+            if (err) {
                 console.log(err)
                 alert('Error:' + err)
-             }
+            }
             // handle response
             console.log(response);
             console.log(entries);
             alert('Saved')
             addActivity()
-          });
-          
-          
+        });
+
+
     }
     function quoteattr(s, preserveCR) {
         preserveCR = preserveCR ? '&#13;' : '\n';
@@ -125,10 +130,10 @@ $(function () {
             You may add other replacements here for HTML only 
             (but it's not necessary).
             Or for XML, only if the named entities are defined in its DTD.
-            */ 
+            */
             .replace(/\r\n/g, preserveCR) /* Must be before the next replacement. */
             .replace(/[\r\n]/g, preserveCR);
-            ;
+        ;
     }
     function showList() {
         app.$activityForm.hide()
@@ -137,28 +142,34 @@ $(function () {
         db.allDocs({
             include_docs: true,
             attachments: false,
-        }, function(err, response) {
+        }, function (err, response) {
             if (err) { return console.log(err); }
             console.log(response)
             html = '<span>No Entries</span>'
-            app.$activityList.html(html)
+            app.$activityTable.html(html)
             i = 0
-            response.rows.forEach(function(row) {
+            response.rows.forEach(function (row) {
                 if (row.id.search('activity-') != -1) {
                     doc = row.doc
                     i += 1
+                    locationHtml = '❌'
+                    if (doc.location.search(',') != -1) {
+                        loc = doc.location.split(',')
+                        url = getGoogleMapsUrl(loc[0], loc[1])
+                        locationHtml = '<span onclick="javasscript:window.open(\'' + url + '\', "_blank")">🌎</span>'
+                    }
+
                     html += '<tr>' +
-                        '<th scope="row">' + i +'</th>' +
-                        '<td>' + doc.date +'</td>' +
-                        '<td>' + doc.time +'</td>' +
-                        '<td>' + doc.location +'</td>' + 
-                        '<td class="text-end"><span title="' + quoteattr(doc.notes) +'">📝</span></td>' +
-                    '</tr>'
+                        '<th scope="row">' + i + '</th>' +
+                        '<td>' + doc.date + '</td>' +
+                        '<td>' + doc.time + '</td>' +
+                        '<td>' + locationHtml + '</td>' +
+                        '<td class="text-end"><span title="' + quoteattr(doc.notes) + '">📝</span></td>' +
+                        '</tr>'
                 }
             })
-            app.$activityList.text(JSON.stringify(response))
-            app.$activityList.html(html)
-        });  
+            app.$activityTable.html(html)
+        });
     }
     function deleteDatabase() {
         if (confirm("All data will be lost, are you sure?") == true) {
@@ -167,19 +178,65 @@ $(function () {
                 if (err) {
                     console.log(err);
                     alert('Error:' + err)
-                  return 
+                    return
                 } else {
-                  // success
-                  alert('Success, reloading app.')
-                  location.reload(); 
+                    // success
+                    alert('Success, reloading app.')
+                    location.reload();
                 }
-              });
-              
-          }
+            });
+
+        }
+    }
+    // Function to download data to a file
+    function download(data, filename, type) {
+        var file = new Blob([data], { type: type });
+        if (window.navigator.msSaveOrOpenBlob) // IE10+
+            window.navigator.msSaveOrOpenBlob(file, filename);
+        else { // Others
+            var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    }
+    function saveToSheet() {
+        data = []
+        i = 0
+        db.allDocs({
+            include_docs: true,
+            attachments: false,
+        }, function (err, response) {
+            if (err) { return console.log(err); }
+            response.rows.forEach(function (row) {
+                if (row.id.search('activity-') != -1) {
+                    i += 1
+                    delete row.doc._id
+                    delete row.doc._rev
+                    row.doc.number = i
+                    data.push(row.doc)
+                }
+            })
+        })
+        //debugger
+        csv = Papa.unparse(data);
+        var date = new Date();
+        var currentDate = date.toISOString().substring(0, 10)
+        var currentTime = date.toISOString().substring(11, 16).replace(':','-')
+        filename = 'lenb-activity-sheet-' +currentDate + '-' + currentTime
+        download(csv, filename, 'text/csv')
     }
     $('.js-add').click(addActivity)
     $('.js-save').click(saveActivity)
     $('.js-list').click(showList)
     $('.js-delete-db').click(deleteDatabase)
+    $('.js-export').click(saveToSheet)
+    
     addActivity(); // init
 })
