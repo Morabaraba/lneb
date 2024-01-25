@@ -1,13 +1,16 @@
 $(function () {
-    $date = $('input[name=date]')
-    $time = $('input[name=time]')
-    $location = $('input[name=location]')
-    $gmaps = $('#google-maps')
+    inputs = ['category', 'date', 'time', 'location']
+    $inputs = {}
+    inputs.forEach(function(input) {
+        $inputs[input] = $('input[name=' + input +']')
+    })
+    $inputs['notes']= $('textarea[name=notes]')
+    $inputs['gmaps']= $('#google-maps')
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition, showError);
     } else {
-        $location.val("Geolocation is not supported.");
+        $inputs['location'].val("Geolocation is not supported.");
     }
 
     function showError(error) {
@@ -26,7 +29,7 @@ $(function () {
                 msg = "An unknown error occurred."
                 break;
         }
-        $location.val(msg);
+        $inputs['location'].val(msg);
     }
 
     function showPosition(position) {
@@ -34,8 +37,8 @@ $(function () {
         lon = position.coords.longitude
         msg = lat + ',' + lon
         url = 'https://www.google.com/maps?ll=' + msg + '&q=' + msg + '&hl=en&t=m&z=15'
-        $location.val(msg);
-        $gmaps.click(function () {
+        $inputs['location'].val(msg);
+        $inputs['gmaps'].click(function () {
             window.open(url, "_blank");
         })
     }
@@ -43,6 +46,6 @@ $(function () {
     var currentDate = date.toISOString().substring(0, 10)
     var currentTime = date.toISOString().substring(11, 16)
 
-    $time.val(currentTime)
-    $date.val(currentDate)
+    $inputs['time'].val(currentTime)
+    $inputs['date'].val(currentDate)
 })
