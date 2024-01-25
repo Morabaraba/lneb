@@ -178,7 +178,7 @@ $(function () {
                         loc = doc.location.split(',')
                         url = getGoogleMapsUrl(loc[0], loc[1])
                         reverseUrl = getReverseMapUrl(loc[0], loc[1])
-                        locationHtml = '<a href="' + url + '"  target="_blank">🌎</a>'
+                        locationHtml = '<a href="' + url + '"  target="_blank">🌎</a>&nbsp;&nbsp;'
                         locationHtml += '<a href="' + reverseUrl + '"  target="_blank">📍</a>'
                     }
                     noteHtml = '<button ' + 
