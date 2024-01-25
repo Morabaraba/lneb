@@ -189,23 +189,20 @@ $(function () {
         }
     }
     // Function to download data to a file
-    function download(data, filename, type) {
-        var file = new Blob([data], { type: type });
-        if (window.navigator.msSaveOrOpenBlob) // IE10+
-            window.navigator.msSaveOrOpenBlob(file, filename);
-        else { // Others
-            var a = document.createElement("a"),
-                url = URL.createObjectURL(file);
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function () {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }, 0);
-        }
+    function download(text, name, type) {
+        var file = new Blob([text], { type: type });
+
+        var a = document.createElement("a");
+        var url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
+
     function saveToSheet() {
         data = []
         i = 0
@@ -223,20 +220,21 @@ $(function () {
                     data.push(row.doc)
                 }
             })
+            //debugger
+            csv = Papa.unparse(data);
+            var date = new Date();
+            var currentDate = date.toISOString().substring(0, 10)
+            var currentTime = date.toISOString().substring(11, 16).replace(':', '-')
+            filename = 'lenb-activity-sheet-' + currentDate + '-' + currentTime
+            download(csv, filename, 'text/csv')
         })
-        //debugger
-        csv = Papa.unparse(data);
-        var date = new Date();
-        var currentDate = date.toISOString().substring(0, 10)
-        var currentTime = date.toISOString().substring(11, 16).replace(':','-')
-        filename = 'lenb-activity-sheet-' +currentDate + '-' + currentTime
-        download(csv, filename, 'text/csv')
+
     }
     $('.js-add').click(addActivity)
     $('.js-save').click(saveActivity)
     $('.js-list').click(showList)
     $('.js-delete-db').click(deleteDatabase)
     $('.js-export').click(saveToSheet)
-    
+
     addActivity(); // init
 })
