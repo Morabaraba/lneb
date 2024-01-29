@@ -3,6 +3,7 @@ $(function () {
     // local vars
     inputs = ['date', 'time', 'location']
     app.inputs = inputs
+    app.version = '240129.0'
     $inputs = {}
     inputs.forEach(function (input) {
         $inputs[input] = $('input[name=' + input + ']')
@@ -95,7 +96,7 @@ $(function () {
         app.$activityList.hide()
         app.$categoriesEdit.hide()
 
-        var date = new Date();
+        var date = new DateSast();
         var currentDate = date.toISOString().substring(0, 10)
         var currentTime = date.toISOString().substring(11, 16)
         $inputs['time'].val(currentTime)
@@ -166,7 +167,8 @@ $(function () {
                 return
             }
             console.log(response)
-            html = '<span>No Entries</span>'
+            html = ''
+            if (response.total_rows <= 1) html = '<span>No Entries</span>'
             app.$activityTable.html(html)
             i = 0
             response.rows.forEach(function (row) {
@@ -178,19 +180,14 @@ $(function () {
                         loc = doc.location.split(',')
                         url = getGoogleMapsUrl(loc[0], loc[1])
                         reverseUrl = getReverseMapUrl(loc[0], loc[1])
-                        locationHtml = '<a href="' + url + '"  target="_blank">🌎</a>&nbsp;&nbsp;'
-                        locationHtml += '<a href="' + reverseUrl + '"  target="_blank">📍</a>'
+                        locationHtml = '<a class="btn btn-secondary" href="' + url + '"  target="_blank"> 🌎 </a>&nbsp;&nbsp;&nbsp;'
+                        locationHtml += '<a class="btn btn-secondary" href="' + reverseUrl + '"  target="_blank"> 📍 </a>'
                     }
                     noteHtml = '<button ' + 
-                    'type="button" ' + 
-                    'class="btn btn-light" ' + 
-                    'data-bs-toggle="popover" ' + 
-                    'data-bs-placement="left" ' + 
-                    'data-bs-title="Note" ' + 
-                    'data-bs-content="'+ quoteattr(doc.notes) + '"  ' + 
-                    '> ' + 
-                    ' 📄 ' + 
-                    '</button>'
+                        'type="button" class="btn btn-secondary" data-bs-toggle="modal" ' + 
+                        'data-bs-content="'+ quoteattr(doc.notes) + '"  ' + 
+                        'data-bs-target="#notes-modal-1">' +
+                        ' 📄 </button>';
                     html += '<tr>' +
                         '<th scope="row">' + i + '</th>' +
                         '<td>' + doc.category + '</td>' +
@@ -202,7 +199,7 @@ $(function () {
                 }
             })
             app.$activityTable.html(html)
-            setupPopover()
+            setupModal()
         });
     }
     function copyCategories(cb) {
@@ -272,13 +269,19 @@ $(function () {
                 }
             })
             csv = Papa.unparse(data);
-            var date = new Date();
+            var date = new DateSast();
             var currentDate = date.toISOString().substring(0, 10)
             var currentTime = date.toISOString().substring(11, 16).replace(':', '-')
             filename = 'lenb-activity-sheet-' + currentDate + '-' + currentTime
             download(csv, filename, 'text/csv')
         })
 
+    }
+    function DateSast() {
+        var date = new Date();
+        // Add 2 hours for SAST (South Africa Standard Time)
+        date.setHours(date.getHours() + 2);
+        return date
     }
     function categoriesEdit() {
         app.$activityForm.hide()
@@ -303,13 +306,25 @@ $(function () {
             addActivity();
         });
     }
-    function setupPopover() {
-        const popoverTriggerList = document.querySelectorAll(
+    function setupModal() {
+        /*const popoverTriggerList = document.querySelectorAll(
             "[data-bs-toggle='popover']"
           );
           const popoverList = [...popoverTriggerList].map(
             popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl)
-          );
+          );*/
+        // Auto-focus when modal is opened
+        const modal = document.getElementById("notes-modal-1");
+        const $modalNotes = $("#js-model-notes")
+        if (modal) {
+            modal.addEventListener("shown.bs.modal", (elem) => {
+            if ($modalNotes) {
+                //debugger
+                $modalNotes.val($(elem.relatedTarget).attr('data-bs-content'))
+                $modalNotes.focus();
+            }
+        });
+        }
     }
     $('.js-add').click(addActivity)
     $('.js-save').click(saveActivity)
@@ -318,6 +333,7 @@ $(function () {
     $('.js-export').click(saveToSheet)
     $('.js-categories').click(categoriesEdit)
     $('.js-categories-save').click(categoriesSave)
+    $('.js-version').text(app.version)
     app.addActivity = addActivity
     addActivity(); // init
 })
