@@ -18,16 +18,16 @@ $(function () {
     app.$categoriesEdit = $('.js-categories-edit')
     app.$categoriesTextArea = $('.js-categories-textarea')
 
-    db = new PouchDB('lenb')
+    db = new PouchDB('lneb')
     app.db = db
     app.categories = ['-']
     function setCategories(cb) {
-        db.get('lenb-categories', function (err, doc) {
+        db.get('lneb-categories', function (err, doc) {
             if (err) {
                 console.log(err);
                 app.categories = ['-']
                 db.put({
-                    _id: 'lenb-categories',
+                    _id: 'lneb-categories',
                     categories: app.categories
                 }, function (err, response) {
                     if (err) {
@@ -203,9 +203,9 @@ $(function () {
         });
     }
     function copyCategories(cb) {
-        db = new PouchDB('lenb')
+        db = new PouchDB('lneb')
         db.put({
-            _id: 'lenb-categories',
+            _id: 'lneb-categories',
             categories: app.categories
         }, function (err, response) {
             if (err) {
@@ -272,7 +272,7 @@ $(function () {
             var date = new DateSast();
             var currentDate = date.toISOString().substring(0, 10)
             var currentTime = date.toISOString().substring(11, 16).replace(':', '-')
-            filename = 'lenb-activity-sheet-' + currentDate + '-' + currentTime
+            filename = 'lneb-activity-sheet-' + currentDate + '-' + currentTime
             download(csv, filename, 'text/csv')
         })
 
@@ -292,7 +292,7 @@ $(function () {
     function categoriesSave() {
         app.categories = app.$categoriesTextArea.val().split('\n')
         db.put({
-            _id: 'lenb-categories',
+            _id: 'lneb-categories',
             _rev: app.categories_rev,
             categories: app.categories
         }, function (err, response) {
