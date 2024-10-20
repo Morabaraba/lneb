@@ -52,10 +52,10 @@
                 ⚙️ Edit
               </a>
               <ul class="dropdown-menu mt-lg-2 rounded-top-0">
-                <li><a class="dropdown-item js-export" href="#">Download Sheet</a></li>
+                <!--<li><a class="dropdown-item js-export" href="#">Download Sheet</a></li>
                 <li>
                   <hr class="dropdown-divider">
-                </li>
+                </li>-->
                 <li><a class="dropdown-item js-categories" href="#">Edit Categories</a></li>
                 <li>
                   <hr class="dropdown-divider">
@@ -121,7 +121,9 @@
         </tr>
       </thead>
       <tbody class="js-activity-tbody">
-
+        <tr>
+          <td><div id="js-leaflet"></div></td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -160,12 +162,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pouchdb/6.2.0/pouchdb.min.js"
     integrity="sha512-RhupHSfsDYeziTogaR4WIQecANO7tctB7qlvMOiQ3fVOcOKSaKATcmRavSSAmGdM0eXnPZTesqTc1c5yLyb4lg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- papaparse -->
+  <!-- PapaParse -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
     integrity="sha512-dfX5uYVXzyU8+KHqj8bjo7UkOdg18PaOtpa48djpNbZHwExddghZ+ZmzWT06R5v6NSk3ZUfsH6FNEDepLx9hPQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <!-- SlickGrid -->
   <script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.0/dist/browser/slick.core.min.js"></script>
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/Leaflet-MovingMaker@0.0.1/MovingMarker.min.js"></script>
   <!-- Main -->
   <script src="./js/main.js"></script>
 </body>
