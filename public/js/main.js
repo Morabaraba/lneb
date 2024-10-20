@@ -17,8 +17,8 @@ $(function () {
     app.$activityTable = $('.js-activity-tbody')
     app.$categoriesEdit = $('.js-categories-edit')
     app.$categoriesTextArea = $('.js-categories-textarea')
-    app.$map = $('#js-map')
-    app.map = setupLeaflet(app.$map)
+    app.$leaflet = $('#js-leaflet')
+    app.leaflet = setupLeaflet(app.$leaflet)
     db = new PouchDB('lneb')
     app.db = db
     app.categories = ['-']
