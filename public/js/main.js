@@ -17,7 +17,8 @@ $(function () {
     app.$activityTable = $('.js-activity-tbody')
     app.$categoriesEdit = $('.js-categories-edit')
     app.$categoriesTextArea = $('.js-categories-textarea')
-
+    app.$map = $('#js-map')
+    app.map = setupLeaflet(app.$map)
     db = new PouchDB('lneb')
     app.db = db
     app.categories = ['-']
@@ -47,30 +48,30 @@ $(function () {
             cb()
         });
     }
-    function setLocation() {
+    function setLocation(cb=showPosition, cbErr=showError) {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError);
+            navigator.geolocation.getCurrentPosition(cb, cbErr);
         } else {
             $inputs['location'].val("Geolocation Unsupported.");
         }
-        function showError(error) {
-            msg = 'Error'
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    msg = "Geolocation Denied."
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    msg = "Geolocation Unavailable."
-                    break;
-                case error.TIMEOUT:
-                    msg = "Geolocation Timeout."
-                    break;
-                case error.UNKNOWN_ERROR:
-                    msg = "Geolocation Unknown."
-                    break;
-            }
-            $inputs['location'].val(msg);
+    }
+    function showError(error) {
+        msg = 'Error'
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                msg = "Geolocation Denied."
+                break;
+            case error.POSITION_UNAVAILABLE:
+                msg = "Geolocation Unavailable."
+                break;
+            case error.TIMEOUT:
+                msg = "Geolocation Timeout."
+                break;
+            case error.UNKNOWN_ERROR:
+                msg = "Geolocation Unknown."
+                break;
         }
+        $inputs['location'].val(msg);
     }
     function getGoogleMapsUrl(lat, lon) {
         msg = lat + ',' + lon
@@ -81,14 +82,29 @@ $(function () {
         url = 'https://nominatim.openstreetmap.org/ui/reverse.html?lat=' + lat + '&lon=' + lon +  '&zoom=18'
         return url
     }
-    
+    function setupLeaflet(elemId) {
+        var map = L.map(elemId).setView([-25.98953, 28.12843], 13)
+        setLocation(function(position) {
+            var latLon =  [position.coords.latitude, position.coords.longitude]
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map)
+            var m = L.marker(latLon)
+            m.addTo(map)
+            m.bindPopup("<b>Are you here?</b><br> If not<br> drag this<br> pin where<br> you are!").openPopup()
+        }, function() {
+            $('#' + elemId).html('<h3 class="error">Enable Location To Show Map</h3>')
+        })        
+        return map
+    }   
     function showPosition(position) {
         lat = position.coords.latitude
         lon = position.coords.longitude
         url = getGoogleMapsUrl(lat, lon)
         $inputs['location'].val(msg);
         $inputs['gmaps'].click(function () {
-            window.open(url, "_blank");
+            window.open(url, "_blank")
         })
     }
     function addActivity() {
