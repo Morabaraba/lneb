@@ -18,7 +18,7 @@ $(function () {
     app.$categoriesEdit = $('.js-categories-edit')
     app.$categoriesTextArea = $('.js-categories-textarea')
     app.$leaflet = $('#js-leaflet')
-    app.leaflet = setupLeaflet(app.$leaflet)
+    app.leaflet = false
     db = new PouchDB('lneb')
     app.db = db
     app.categories = ['-']
@@ -215,6 +215,7 @@ $(function () {
                 }
             })
             app.$activityTable.html(html)
+            if (!app.leaflet) app.leaflet = setupLeaflet(app.$leaflet)
             setupModal()
         });
     }
