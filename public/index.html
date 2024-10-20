@@ -33,22 +33,23 @@
         </button>
         <a class="navbar-brand me-0" href="#">
           <a class="navbar-brand" onclick="javascript:app.addActivity()">
-            🐑 LNEB
+            🐑 <!-- LNEB -->
             <span class=js-version></span>
           </a>
         </a>
         <div class="collapse navbar-collapse" id="navbar-collapse-10">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="btn btn-secondary js-add" href="#">📝 Add</a>
-            </li>
-            <li class="nav-item">
               <a class="btn btn-secondary js-list" href="#">📙 List</a>
             </li>
+            <li class="nav-item">
+              <a class="btn btn-secondary js-add" href="#">📝 New</a>
+            </li>
+
             <li class="nav-item dropdown">
               <a class="btn btn-secondary" href="#" role="button" data-bs-toggle="dropdown"
                 aria-expanded="false">
-                ⚙️ Config
+                ⚙️ Edit
               </a>
               <ul class="dropdown-menu mt-lg-2 rounded-top-0">
                 <li><a class="dropdown-item js-export" href="#">Download Sheet</a></li>
@@ -61,6 +62,9 @@
                 </li>
                 <li><a class="dropdown-item js-delete-db" href="#">Delete Database</a></li>
               </ul>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-secondary js-export" href="#">📝 Backup</a>
             </li>
             <!-- <li class="nav-item">
               <a class="btn btn-secondary disabled">Blog</a>
