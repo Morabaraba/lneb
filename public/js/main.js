@@ -3,7 +3,7 @@ $(function () {
     // local vars
     inputs = ['date', 'time', 'location']
     app.inputs = inputs
-    app.version = '240129.1'
+    app.version = '241020.1.lneb.map'
     $inputs = {}
     inputs.forEach(function (input) {
         $inputs[input] = $('input[name=' + input + ']')
