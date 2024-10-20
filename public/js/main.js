@@ -82,8 +82,8 @@ $(function () {
         url = 'https://nominatim.openstreetmap.org/ui/reverse.html?lat=' + lat + '&lon=' + lon +  '&zoom=18'
         return url
     }
-    function setupLeaflet(elemId) {
-        var map = L.map(elemId).setView([-25.98953, 28.12843], 13)
+    function setupLeaflet($elem) {
+        var map = L.map($elem[0]).setView([-25.98953, 28.12843], 13)
         setLocation(function(position) {
             var latLon =  [position.coords.latitude, position.coords.longitude]
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -94,7 +94,7 @@ $(function () {
             m.addTo(map)
             m.bindPopup("<b>Are you here?</b><br> If not<br> drag this<br> pin where<br> you are!").openPopup()
         }, function() {
-            $('#' + elemId).html('<h3 class="error">Enable Location To Show Map</h3>')
+            $elem.html('<h3 class="error">Enable Location Sharing To Show Map!</h3>')
         })        
         return map
     }   
